@@ -11,7 +11,9 @@ namespace ALvector
 {
     public partial class Form1 : Form
     {
-        List<Cross> Shapes = new List<Cross>();
+        List<Shape> Shapes = new List<Shape>();
+        Point ShapeStart;
+        bool IsShapeStart = true;
 
         public Form1()
         {
@@ -20,9 +22,14 @@ namespace ALvector
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
-
-            Shapes.Add(new Cross(e.X, e.Y));
-            this.Refresh(); 
+            if (rb_Cross.Checked) Shapes.Add(new Cross(e.X, e.Y));
+            if (rb_Line.Checked)
+            {
+                if (IsShapeStart) ShapeStart = e.Location;
+                else Shapes.Add(new Line(ShapeStart, e.Location));
+                IsShapeStart = !IsShapeStart;
+            }
+            this.Refresh();
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
@@ -32,12 +39,12 @@ namespace ALvector
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            foreach (Cross p in Shapes)
+            foreach (Shape p in Shapes)
             {
                 p.DrawWith(e.Graphics);
             }
         }
-        public class Cross 
+        public class Cross : Shape
         {
             int X, Y;
             Pen p = new Pen(Color.Red);
@@ -45,11 +52,33 @@ namespace ALvector
             {
                 X = _X; Y = _Y;
             }
-            public void DrawWith(Graphics g)
+            public override void DrawWith(Graphics g)
             {
                 g.DrawLine(p, X - 4, Y - 4, X + 4, Y + 4);
                 g.DrawLine(p, X + 4, Y - 4, X - 4, Y + 4);
             }
+        }
+        public class Line : Shape
+        {
+            Point C, F;
+            Pen p = new Pen(Color.Blue);
+            public Line(Point _C, Point _F)
+            {
+                this.C = _C; this.F = _F;
+            }
+            public override void DrawWith(Graphics g)
+            {
+                g.DrawLine(p, C, F);
+            }
+        }
+
+        private void rb_CheckedChanged(object sender, EventArgs e)
+        {
+            IsShapeStart = !IsShapeStart;
+        }
+        public abstract class Shape
+        {
+            public abstract void DrawWith(Graphics g);
         }
     }
 }
